@@ -1,6 +1,7 @@
 [book]
 authors = ["Carl Fredrik Samson"]
 language = "en"
+version = "0.0.1"
 multilingual = false
 src = "src"
 title = "Futures Explained in 200 Lines of Rust"
@@ -15,3 +16,6 @@ google-analytics = "UA-157536992-1"
 editable = true
 copy-js = true
 line-numbers = true
+
+[output.epub]
+
