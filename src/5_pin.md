@@ -264,7 +264,7 @@ it's easy to create serious bugs using this code.
 
 I created a diagram to help visualize what's going on:
 
-**Fig 1: Before and after swap**
+**Fig 2: Before and after swap**
 ![swap_problem](./assets/swap_problem.jpg)
 
 As you can see this results in unwanted behavior. It's easy to get this to
@@ -557,7 +557,7 @@ code.
 "read only" memory or anything fancy. It only uses the type system to prevent
 certain operations on this value.
 
-1. Most standard library types implement `Unpin`. The same goes for most
+4. Most standard library types implement `Unpin`. The same goes for most
 "normal" types you encounter in Rust. `Future`s and `Generator`s are two
 exceptions.
 
@@ -611,7 +611,7 @@ But now, let's prevent this problem using `Pin`. I've commented along the way to
 make it easier to spot and understand the changes we need to make.
 
 ```rust
-#![feature(optin_builtin_traits, negative_impls)] // needed to implement `!Unpin`
+#![feature(auto_traits, negative_impls)] // needed to implement `!Unpin`
 use std::pin::Pin;
 
 pub fn main() {

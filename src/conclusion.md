@@ -13,7 +13,7 @@ Until next time!
 
 ## Reader exercises
 
-So our implementation has taken some obvious shortcuts and could use some improvement. 
+So our implementation has taken some obvious shortcuts and could use some improvement.
 Actually digging into the code and try things yourself is a good way to learn. Here are
 some good exercises if you want to explore more:
 
@@ -30,13 +30,13 @@ thing in a slightly different way to get some inspiration.
 * Do you want to pass around a reference to this information using an `Arc`?
 * Do you want to make a global `Reactor` so it can be accessed from anywhere?
 
-### Building a better exectuor
+### Building a better executor
 
-Right now, we can only run one and one future only. Most runtimes has a `spawn` 
+Right now, we can only run one and one future only. Most runtimes has a `spawn`
 function which let's you start off a future and `await` it later so you
 can run multiple futures concurrently.
 
-As I suggested in the start of this book, visiting [@stjepan'sblog series about implementing your own executors](https://stjepang.github.io/2020/01/31/build-your-own-executor.html)
+As I suggested in the start of this book, visiting [@stjepan'sblog series about implementing your own executors](https://web.archive.org/web/20200207092849/https://stjepang.github.io/2020/01/31/build-your-own-executor.html)
 is the place I would start and take it from there.
 
 ### Create an unique Id for each task

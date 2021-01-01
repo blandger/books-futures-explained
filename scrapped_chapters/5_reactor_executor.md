@@ -26,7 +26,7 @@ I'll re-iterate the most important parts here.
 
 1. **A reactor**
     - handles some kind of event queue
-    - has the responsibility of respoonding to events
+    - has the responsibility of responding to events
 2. **An executor**
     - Often has a scheduler
     - Holds a set of suspended tasks, and has the responsibility of resuming
@@ -34,30 +34,30 @@ I'll re-iterate the most important parts here.
 3. **The concept of a task**
     - A set of operations that can be stopped half way and resumed later on
 
-This kind of pattern common outside of Rust as well, but it's especially popular in Rust due to how well it alignes with the API provided by Rusts standard library. This model separates concerns between handling and scheduling tasks, and queing and responding to I/O events.
+This kind of pattern common outside of Rust as well, but it's especially popular in Rust due to how well it aligns with the API provided by Rusts standard library. This model separates concerns between handling and scheduling tasks, and queuing and responding to I/O events.
 
 ## The Reactor
 
 Since concurrency mostly makes sense when interacting with the outside world (or
 at least some peripheral), we need something to actually abstract over this
-interaction in an asynchronous way. 
+interaction in an asynchronous way.
 
 This is the `Reactors` job. Most often you'll
-see reactors in rust use a library called [Mio][mio], which provides non 
+see reactors in rust use a library called [Mio][mio], which provides non
 blocking APIs and event notification for several platforms.
 
 The reactor will typically give you something like a `TcpStream` (or any other resource) which you'll use to create an I/O request. What you get in return
-is a `Future`. 
+is a `Future`.
 
-We can call this kind of `Future` a "leaf Future`, since it's some operation 
+We can call this kind of `Future` a "leaf Future`, since it's some operation
 we'll actually wait on and that we can chain operations on which are performed
-once the leaf future is ready. 
+once the leaf future is ready.
 
 ## The Task
 
 In Rust we call an interruptible task a `Future`. Futures has a well defined interface, which means they can be used across the entire ecosystem. We can chain
 these `Futures` so that once a "leaf future" is ready we'll perform a set of
-operations. 
+operations.
 
 These operations can spawn new leaf futures themselves.
 
@@ -65,7 +65,7 @@ These operations can spawn new leaf futures themselves.
 
 The executors task is to take one or more futures and run them to completion.
 
-The first thing an `executor` does when it get's a `Future` is polling it.
+The first thing an `executor` does when it gets a `Future` is polling it.
 
 **When polled one of three things can happen:**
 

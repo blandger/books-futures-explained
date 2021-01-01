@@ -261,8 +261,14 @@ _**Press the expand icon in the top right corner to show the example code.**_
 #         self.current = pos;
 #
 #         unsafe {
-#             switch(&mut self.threads[old_pos].ctx, &self.threads[pos].ctx);
-#         }
+#            let old: *mut ThreadContext = &mut self.threads[old_pos].ctx;
+#            let new: *const ThreadContext = &self.threads[pos].ctx;
+#            llvm_asm!(
+#                "mov $0, %rdi
+#                 mov $1, %rsi"::"r"(old), "r"(new)
+#            );
+#            switch();
+#        }
 #         true
 #     }
 #
@@ -276,12 +282,15 @@ _**Press the expand icon in the top right corner to show the example code.**_
 #                 .expect("no available thread.");
 #
 #             let size = available.stack.len();
-#             let s_ptr = available.stack.as_mut_ptr();
+#             let s_ptr = available.stack.as_mut_ptr().offset(size as isize);
+#             let s_ptr = (s_ptr as usize & !15) as *mut u8;
 #             available.task = Some(Box::new(f));
 #             available.ctx.thread_ptr = available as *const Thread as u64;
-#             ptr::write(s_ptr.offset((size - 8) as isize) as *mut u64, guard as u64);
-#             ptr::write(s_ptr.offset((size - 16) as isize) as *mut u64, call as u64);
-#             available.ctx.rsp = s_ptr.offset((size - 16) as isize) as u64;
+#             //ptr::write(s_ptr.offset((size - 8) as isize) as *mut u64, guard as u64);
+#             std::ptr::write(s_ptr.offset(-16) as *mut u64, guard as u64);
+#             std::ptr::write(s_ptr.offset(-24) as *mut u64, skip as u64);
+#             std::ptr::write(s_ptr.offset(-32) as *mut u64, call as u64);
+#             available.ctx.rsp = s_ptr.offset(-32) as u64;
 #             available.state = State::Ready;
 #         }
 #     }
@@ -295,6 +304,8 @@ _**Press the expand icon in the top right corner to show the example code.**_
 # }
 #
 # #[naked]
+# fn skip() { }
+#
 # fn guard() {
 #     unsafe {
 #         let rt_ptr = RUNTIME as *mut Runtime;
@@ -313,31 +324,26 @@ _**Press the expand icon in the top right corner to show the example code.**_
 #
 # #[naked]
 # #[inline(never)]
-# unsafe fn switch(old: *mut ThreadContext, new: *const ThreadContext) {
+# unsafe fn switch() {
 #     llvm_asm!("
-#         mov     %rsp, 0x00($0)
-#         mov     %r15, 0x08($0)
-#         mov     %r14, 0x10($0)
-#         mov     %r13, 0x18($0)
-#         mov     %r12, 0x20($0)
-#         mov     %rbx, 0x28($0)
-#         mov     %rbp, 0x30($0)
+#        mov     %rsp, 0x00(%rdi)
+#        mov     %r15, 0x08(%rdi)
+#        mov     %r14, 0x10(%rdi)
+#        mov     %r13, 0x18(%rdi)
+#        mov     %r12, 0x20(%rdi)
+#        mov     %rbx, 0x28(%rdi)
+#        mov     %rbp, 0x30(%rdi)
 #
-#         mov     0x00($1), %rsp
-#         mov     0x08($1), %r15
-#         mov     0x10($1), %r14
-#         mov     0x18($1), %r13
-#         mov     0x20($1), %r12
-#         mov     0x28($1), %rbx
-#         mov     0x30($1), %rbp
-#         mov     0x38($1), %rdi
-#         ret
-#         "
-#     :
-#     : "r"(old), "r"(new)
-#     :
-#     : "alignstack"
-#     );
+#        mov     0x00(%rsi), %rsp
+#        mov     0x08(%rsi), %r15
+#        mov     0x10(%rsi), %r14
+#        mov     0x18(%rsi), %r13
+#        mov     0x20(%rsi), %r12
+#        mov     0x28(%rsi), %rbx
+#        mov     0x30(%rsi), %rbp
+#        mov     0x38(%rsi), %rdi
+#        "
+#    );
 # }
 # #[cfg(not(windows))]
 fn main() {
@@ -516,8 +522,8 @@ function timer(ms) {
 }
 
 timer(200)
-.then(() => return timer(100))
-.then(() => return timer(50))
+.then(() => timer(100))
+.then(() => timer(50))
 .then(() => console.log("I'm the last one"));
 ```
 
@@ -541,7 +547,7 @@ async function run() {
 
 You can consider the `run` function as a _pausable_ task consisting of several
 sub-tasks. On each "await" point it yields control to the scheduler (in this
-case it's the well-known JavaScript event loop). 
+case it's the well-known JavaScript event loop).
 
 Once one of the sub-tasks changes state to either `fulfilled` or `rejected`, the
 task is scheduled to continue to the next step.
@@ -549,8 +555,8 @@ task is scheduled to continue to the next step.
 Syntactically, Rust's Futures 0.1 was a lot like the promises example above, and
 Rust's Futures 0.3 is a lot like async/await in our last example.
 
-Now this is also where the similarities between JavaScript promises and Rust's 
-Futures stop. The reason we go through all this is to get an introduction and 
+Now this is also where the similarities between JavaScript promises and Rust's
+Futures stop. The reason we go through all this is to get an introduction and
 get into the right mindset for exploring Rust's Futures.
 
 > To avoid confusion later on: There's one difference you should know. JavaScript

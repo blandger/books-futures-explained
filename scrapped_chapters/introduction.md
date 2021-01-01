@@ -9,7 +9,7 @@ In contrast to many other languages, Rust doesn't come with a large runtime. The
 * Provide zero cost abstractions \(a runtime is never zero cost\)
 * Usable in embedded scenarios
 
-Actually, at one point, Rust provided green threads for handling `async` programming, but they were dropped before Rust hit 1.0. The road after that has been a long one, but it has always revolved around the `Future`trait. 
+Actually, at one point, Rust provided green threads for handling `async` programming, but they were dropped before Rust hit 1.0. The road after that has been a long one, but it has always revolved around the `Future`trait.
 
 `Futures` in Rust comes in several versions, and that can be a source of some confusion for new users.
 
@@ -40,7 +40,7 @@ There were other issues as well, but the lack of ergonomics was one of the major
 
 #### Futures 0.3
 
-This is the current iteration over `Futures` and the one we'll use in our examples. This iteration solved a lot of the problems with 1.0, especially concerning ergonimics.
+This is the current iteration over `Futures` and the one we'll use in our examples. This iteration solved a lot of the problems with 1.0, especially concerning ergonomics.
 
 The `async/await` syntax was designed in tandem with `Futures 3.0` and provides a much more ergonomic way to work with `Futures`:
 
@@ -55,7 +55,7 @@ let value = executor.block_on(asyncfunc()).unwrap();
 println!("{}", value);
 ```
 
-Before we go on further, let's separate the topic of async programming into some topics to better understand what we'll cover in this book and what we'll not cover. 
+Before we go on further, let's separate the topic of async programming into some topics to better understand what we'll cover in this book and what we'll not cover.
 
 #### How \`Futures\` are implemented in the language
 

@@ -56,9 +56,9 @@ fn block_on<F: Future>(mut future: F) -> F::Output {
     let mywaker = Arc::new(MyWaker { parker: parker.clone() });
     let waker = mywaker_into_waker(Arc::into_raw(mywaker));
     let mut cx = Context::from_waker(&waker);
-    
+
     // SAFETY: we shadow `future` so it can't be accessed again.
-    let mut future = unsafe { Pin::new_unchecked(&mut future) }; 
+    let mut future = unsafe { Pin::new_unchecked(&mut future) };
     loop {
         match Future::poll(future.as_mut(), &mut cx) {
             Poll::Ready(val) => break val,
@@ -93,7 +93,7 @@ const VTABLE: RawWakerVTable = unsafe {
     RawWakerVTable::new(
         |s| mywaker_clone(&*(s as *const MyWaker)),   // clone
         |s| mywaker_wake(&*(s as *const MyWaker)),    // wake
-        |s| mywaker_wake(*(s as *const &MyWaker)),    // wake by ref
+        |s| (*(s as *const MyWaker)).parker.unpark(), // wake by ref (don't decrease refcount)
         |s| drop(Arc::from_raw(s as *const MyWaker)), // decrease refcount
     )
 };
@@ -151,7 +151,7 @@ impl Reactor {
             handle: None,
             tasks: HashMap::new(),
         })));
-        
+
         let reactor_clone = Arc::downgrade(&reactor);
         let handle = thread::spawn(move || {
             let mut handles = vec![];

@@ -99,20 +99,58 @@ you'll see that there are several similarities between these kind of runtimes, s
 learning one makes learning the next much easier.
 
 The difference between Rust and other languages is that you have to make an
-active choice when it comes to picking a runtime. Most often in other languages, 
+active choice when it comes to picking a runtime. Most often in other languages,
 you'll just use the one provided for you.
 
-**An async runtime can be divided into two parts:**
+### A useful mental model of an async runtime
 
-1. The Executor
-2. The Reactor
+I find it easier to reason about how Futures work by creating a high level mental model we can use.
+To do that I have to introduce the concept of a runtime which will drive our Futures to completion.
 
-When Rusts Futures were designed there was a desire to separate the job of
-notifying a `Future` that it can do more work, and actually doing the work
-on the `Future`.
+>Please note that the mental model I create here is not the *only* way to drive Futures to
+completion and that Rust’s Futures does not impose any restrictions on how you actually accomplish
+this task.
 
-You can think of the former as the reactor's job, and the latter as the
-executors job. These two parts of a runtime interact with each other using the `Waker` type.
+**A fully working async system in Rust can be divided into three parts:**
+
+1. Reactor
+2. Executor
+3. Future
+
+So, how does these three parts work together? They do that through an object called the `Waker`.
+The `Waker` is how the reactor tells the executor that a specific Future is ready to run. Once you
+understand the life cycle and ownership of a Waker, you'll understand how futures work from a user's
+perspective. Here is the life cycle:
+
+- A Waker is created by the **executor.** A common, but not required, method is
+  to create a new Waker for each Future that is registered with the executor.
+- When a future is registered with an executor, it’s given a clone of the Waker
+  object created by the executor. Since this is a shared object (e.g. an
+  `Arc<T>`), all clones actually point to the same underlying object.  Thus,
+  anything that calls _any_ clone of the original Waker will wake the particular
+  Future that was registered to it.
+- The future clones the Waker and passes it to the reactor, which stores it to
+  use later.
+
+At some point in the future, the reactor will decide that the future is ready to run. It will wake
+the future via the Waker that it stored. This action will do what is necessary to get the executor
+in a position to poll the future.
+
+The Waker object implements everything that we associate with
+[task](https://doc.rust-lang.org/std/task/index.html). The object is specific to the type of
+executor in use, but all Wakers share a similar interface (it's not a trait because
+embedded systems can't handle trait objects, but a useful abstraction is to think of it as a trait
+object).
+
+Since the interface is the same across all executors, reactors can _in theory_ be completely
+oblivious to the type of the executor, and vice-versa. **Executors and reactors never need to
+communicate with one another directly.**
+
+This design is what gives the futures framework it's power and flexibility and allows the Rust
+standard library to provide an ergonomic, zero-cost abstraction for us to use.
+
+In an effort to try to visualize how these parts work together I put together
+a set of slides in the next chapter that I hope will help.
 
 The two most popular runtimes for Futures as of writing this is:
 
@@ -193,7 +231,7 @@ Futures, but we're not gonna stop yet, there are lots of details to cover.
 
 Take a break or a cup of coffee and get ready as we go for a deep dive in the next chapters.
 
-## Bonus section
+## Want to learn more about concurrency and async?
 
 If you find the concepts of concurrency and async programming confusing in
 general, I know where you're coming from and I have written some resources to
@@ -212,7 +250,61 @@ I'll be right here when you're back.
 
 However, if you feel that you have the basics covered, then let's get moving!
 
+## Bonus section - additional notes on Futures and Wakers
+
+> In this section we take a deeper look at some  advantages of having a loose
+coupling between the Executor-part and Reactor-part of an async runtime.
+
+Earlier in this chapter, I mentioned that it is common for the
+executor to create a new Waker for each Future that is registered with the
+executor, but that the Waker is a shared object similar to a `Arc<T>`. One of
+the reasons for this design is that it allows different Reactors the
+ability to Wake a Future.  
+
+As an example of how this can be used, consider how you could create a new type
+of Future that has the ability to be canceled: 
+
+One way to achieve this would be to add an
+[`AtomicBool`](https://doc.rust-lang.org/std/sync/atomic/struct.AtomicBool.html)
+to the instance of the future, and an extra method called `cancel()`.  The
+`cancel()` method  will first set the
+[`AtomicBool`](https://doc.rust-lang.org/std/sync/atomic/struct.AtomicBool.html)
+to signal that the future is now canceled, and then immediately call instance's
+own  copy of the Waker.
+
+Once the executor starts executing the Future, the
+_Future_ will know that it was canceled, and will do the appropriate cleanup
+actions to terminate itself.
+
+The main reason for designing the Future in this manner is because we don't have
+to modify either the Executor or the other Reactors; they are all oblivious to
+the change.
+
+The only possible issue is with the design of the Future itself; a
+Future that is canceled still needs to terminate correctly according to the
+rules outlined in the docs for
+[`Future`](https://doc.rust-lang.org/std/future/trait.Future.html).  That means
+that it can't just delete it's resources and then sit there; it needs to return
+a value.  It is up to you to decide if a canceled future will return
+[`Pending`](https://doc.rust-lang.org/std/task/enum.Poll.html#variant.Pending)
+forever, or if it will return a value in
+[`Ready`](https://doc.rust-lang.org/std/task/enum.Poll.html#variant.Ready). Just
+be aware that if other Futures are `await`ing it, they won't be able to start
+until [`Ready`](https://doc.rust-lang.org/std/task/enum.Poll.html#variant.Ready)
+is returned.
+
+A common technique for cancelable Futures is to have them return a
+Result with an error that signals the Future was canceled; that will permit any
+Futures that are awaiting the canceled Future a chance to progress, with the
+knowledge that the Future they depended on was canceled.  There are additional
+concerns as well, but beyond the scope of this book.  Read the documentation and
+code for the [`futures`](https://crates.io/crates/futures) crate for a better
+understanding of what the concerns are.
+
+>_Thanks to [@ckaran](https://github.com/ckaran) for contributing this bonus segment._
+
 [async_std]: https://github.com/async-rs/async-std
 [tokio]: https://github.com/tokio-rs/tokio
 [compat_info]: https://rust-lang.github.io/futures-rs/blog/2019/04/18/compatibility-layer.html
 [futures_rs]: https://github.com/rust-lang/futures-rs
+

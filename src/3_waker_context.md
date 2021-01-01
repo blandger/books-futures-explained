@@ -3,7 +3,7 @@
 > **Overview:**
 >
 > - Understand how the Waker object is constructed
-> - Learn how the runtime know when a leaf-future can resume
+> - Learn how the runtime knows when a leaf-future can resume
 > - Learn the basics of dynamic dispatch and trait objects
 >
 > The `Waker` type is described as part of [RFC#2592][rfc2592].
