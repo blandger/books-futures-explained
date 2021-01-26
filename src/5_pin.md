@@ -25,7 +25,7 @@ to govern the rules that need to apply for types which implement `!Unpin`.
 Yep, you're right, that's double negation right there. `!Unpin` means
 "not-un-pin".
 
-> _This naming scheme is one of Rusts safety features where it deliberately
+> _This naming scheme is one of Rust's safety features where it deliberately
 > tests if you're too tired to safely implement a type with this marker. If
 > you're starting to get confused, or even angry, by `!Unpin` it's a good sign
 > that it's time to lay down the work and start over tomorrow with a fresh mind._

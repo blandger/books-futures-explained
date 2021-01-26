@@ -4,7 +4,7 @@
 >
 >- Understand how the async/await syntax works under the hood
 >- See first hand why we need `Pin`
->- Understand what makes Rusts async model very memory efficient
+>- Understand what makes Rust's async model very memory efficient
 >
 >The motivation for `Generator`s can be found in [RFC#2033][rfc2033]. It's very
 >well written and I can recommend reading through it (it talks as much about
@@ -301,7 +301,7 @@ impl Generator for GeneratorA {
 If you try to compile this you'll get an error (just try it yourself by pressing play).
 
 What is the lifetime of `&String`. It's not the same as the lifetime of `Self`. It's not `static`.
-Turns out that it's not possible for us in Rusts syntax to describe this lifetime, which means, that
+Turns out that it's not possible for us in Rust's syntax to describe this lifetime, which means, that
 to make this work, we'll have to let the compiler know that _we_ control this correctly ourselves.
 
 That means turning to unsafe.

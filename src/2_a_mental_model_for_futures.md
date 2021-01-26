@@ -2,16 +2,19 @@
 
 The main goal in this part is to build a high level
 mental model of how the different pieces we read about in the previous chapter
-works together. I hope this will make it easier to understand what we just read
-about in the previous chapter and also explain why we take a deep dive into topics
-like trait objects and generators in the next few chapters.
+works together. I hope this will make it easier to understand the high level concepts
+before we take a deep dive into topics like trait objects and generators in the next
+few chapters.
 
-This is not the only way to model this since we're making assumptions on runtime
-specifics that can vary a great deal, but it's the way I found it easiest to
-build upon. Finally, please note that the code itself is "pseudo-rust" due to
-the need for brevity and clarity.
+This is not the only way to create a model of an async system since we're making
+assumptions on runtime specifics that can vary a great deal. It's the way I found
+it easiest to build upon and it's relevant for understanding a lot of real
+implementations you'll find in the async ecosystem.
 
->Click on a page to open a larger view of it in a new tab.
+Finally, please note that the code itself is "pseudo-rust" due to the need for brevity
+and clarity.
+
+>Click on a page to open a larger view in a new tab.
 
 <a href="./assets/slides/Slide1.PNG" target="_blank">
  <img src="./assets/slides/Slide1.PNG" alt="slide1"/>

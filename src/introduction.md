@@ -21,11 +21,11 @@ articles about async runtimes and executors, and if the rumors are right there
 is more to come from him in the near future.
 
 The way you should go about it is to read this book first, then continue
-reading the [articles from stejpang](https://stjepang.github.io/) to learn more
+reading the [articles from stjepang](https://stjepang.github.io/) to learn more
 about runtimes and how they work, especially:
 
-1. [Build your own block_on()](https://stjepang.github.io/2020/01/25/build-your-own-block-on.html)
-2. [Build your own executor](https://stjepang.github.io/2020/01/31/build-your-own-executor.html)
+1. [Build your own block_on()](https://web.archive.org/web/20200511234503/https://stjepang.github.io/2020/01/25/build-your-own-block-on.html)
+2. [Build your own executor](https://web.archive.org/web/20200207092849/https://stjepang.github.io/2020/01/31/build-your-own-executor.html)
 
 I've limited myself to a 200 line main example (hence the title) to limit the
 scope and introduce an example that can easily be explored further.

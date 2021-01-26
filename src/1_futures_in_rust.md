@@ -77,9 +77,9 @@ The key to these tasks is that they're able to yield control to the runtime's
 scheduler and then resume execution again where it left off at a later point.
 
 In contrast to leaf futures, these kind of futures do not themselves represent
-an I/O resource. When we poll these futures we either run some code or we yield
-to the scheduler while waiting for some resource to signal us that it's ready so
-we can resume where we left off.
+an I/O resource. When we poll them they will run until they get to a
+leaf-future which returns `Pending` and then yield control to the scheduler
+(which is a part of what we call the runtime).
 
 ## Runtimes
 
@@ -165,7 +165,7 @@ future through the `Future` trait.
 the `async` and `await` keywords.
 3. A defined interface to wake up a suspended task through the `Waker` type.
 
-That's really what Rusts standard library does. As you see there is no definition
+That's really what Rust's standard library does. As you see there is no definition
 of non-blocking I/O, how these tasks are created, or how they're run.
 
 ## I/O vs CPU intensive tasks
@@ -235,7 +235,7 @@ Take a break or a cup of coffee and get ready as we go for a deep dive in the ne
 
 If you find the concepts of concurrency and async programming confusing in
 general, I know where you're coming from and I have written some resources to
-try to give a high-level overview that will make it easier to learn Rusts
+try to give a high-level overview that will make it easier to learn Rust's
 Futures afterwards:
 
 * [Async Basics - The difference between concurrency and parallelism](https://cfsamson.github.io/book-exploring-async-basics/1_concurrent_vs_parallel.html)
@@ -259,10 +259,10 @@ Earlier in this chapter, I mentioned that it is common for the
 executor to create a new Waker for each Future that is registered with the
 executor, but that the Waker is a shared object similar to a `Arc<T>`. One of
 the reasons for this design is that it allows different Reactors the
-ability to Wake a Future.  
+ability to Wake a Future.
 
 As an example of how this can be used, consider how you could create a new type
-of Future that has the ability to be canceled: 
+of Future that has the ability to be canceled:
 
 One way to achieve this would be to add an
 [`AtomicBool`](https://doc.rust-lang.org/std/sync/atomic/struct.AtomicBool.html)
