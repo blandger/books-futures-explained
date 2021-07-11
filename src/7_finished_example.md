@@ -210,7 +210,7 @@ impl Drop for Reactor {
 ## A little side note
 
 The comments delimiting the Executor, `Future` implementation and Reactor, 
-emphasize on what is part of the langauge (Future and Waker) and what is not (runtime specifics). 
+emphasize on what is part of the language (Future and Waker) and what is not (runtime specifics). 
 Therefore, the comments associate the `Waker` with the `Future` implementation,
 despite its strong relation with the Executor.
 
